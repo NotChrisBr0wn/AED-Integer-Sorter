@@ -2,10 +2,10 @@ import java.io.*;
 
 public class IntSorter {
 
-    // ---MANIPULAÇÃO DE FICHEIROS---
+    // Manipulação de Ficheiros
     public static class FileManager {
 
-        // --- Leitura e Escrita de Ficheiros ---
+        // le ficheiro de acordo com a extensao
         public static int[] lerFicheiro(String nomeFicheiro, int n) throws IOException {
             if (nomeFicheiro.endsWith(".bin") || nomeFicheiro.endsWith(".dat")) {
                 return lerBinario(nomeFicheiro, n);
@@ -14,6 +14,7 @@ public class IntSorter {
             }
         }
 
+        // detetar extensao e guardar ficheiro ordenado
         public static void guardarFicheiro(String nomeFicheiro, int[] dados) throws IOException {
             String nomeSaida = "ordenado_" + nomeFicheiro;
             if (nomeFicheiro.endsWith(".bin") || nomeFicheiro.endsWith(".dat")) {
@@ -69,20 +70,19 @@ public class IntSorter {
         }
     }
 
-    // --- ALGORITMOS DE ORDENAÇÃO ---
+    // Alogritmos de ordenacao
     public static class SortAlgorithms {
 
-        // Quick Sort
+        // --- QuickSort ---
         public static void quickSort(int[] arr, int low, int high) {
             if (low < high) {
                 int pi = partition(arr, low, high);
-                quickSort(arr, low, pi - 1); // Ordena elementos antes da partição
-                quickSort(arr, pi + 1, high); // Ordena elementos depois da partição
+                quickSort(arr, low, pi - 1);
+                quickSort(arr, pi + 1, high);
             }
         }
 
         private static int partition(int[] arr, int low, int high) {
-            // Seleciona medidana de 3 
             int mid = low + (high - low) / 2;
             if (arr[mid] < arr[low]) swap(arr, low, mid);
             if (arr[high] < arr[low]) swap(arr, low, high);
@@ -101,7 +101,7 @@ public class IntSorter {
             return i + 1;
         }
 
-        // --- Shell Sort (Sequência Shell N/2) ---
+        // --- ShellSort ---
         public static void shellSort(int[] arr) {
             int n = arr.length;
             for (int gap = n / 2; gap > 0; gap /= 2) {
@@ -116,7 +116,7 @@ public class IntSorter {
             }
         }
 
-        // --- Bubble Sort ---
+        // --- BubbleSort ---
         public static void bubbleSort(int[] arr) {
             int n = arr.length;
             boolean swapped;
@@ -139,35 +139,63 @@ public class IntSorter {
         }
     }
 
-    // --- Método Main ---
+    // Main
     public static void main(String[] args) {
         if (args.length < 2) {
-            System.out.println("Uso: java IntSorter <nome_ficheiro> <tamanho_n>");
+            System.out.println("Como usar: java IntSorter <nome_ficheiro> <tamanho_n>");
             return;
         }
 
         String nomeFicheiro = args[0];
-        int n = Integer.parseInt(args[1]);
+        int n;
+
+        try {
+            n = Integer.parseInt(args[1]);
+        } catch (NumberFormatException e) {
+            System.err.println("Erro: O segundo argumento deve ser um numero inteiro.");
+            return;
+        }
 
         try {
             System.out.println("A ler " + n + " inteiros de " + nomeFicheiro + "...");
-            int[] dados = FileManager.lerFicheiro(nomeFicheiro, n);
+            int[] dadosOriginais = FileManager.lerFicheiro(nomeFicheiro, n);
 
-            long inicio = System.currentTimeMillis();
-            
-            // Aplicação do QuickSort
-            SortAlgorithms.quickSort(dados, 0, dados.length - 1);
-            
-            long fim = System.currentTimeMillis();
-            System.out.println("Ordenação concluída em " + (fim - inicio) + " ms.");
+            System.out.println("\n=== ESTUDO COMPARATIVO DE DESEMPENHO ===");
 
-            FileManager.guardarFicheiro(nomeFicheiro, dados);
-            System.out.println("Ficheiro ordenado gravado com sucesso.");
+            // Avaliação do QuickSort
+            int[] dadosQuick = dadosOriginais.clone();
+            long tInicio = System.nanoTime();
+            SortAlgorithms.quickSort(dadosQuick, 0, dadosQuick.length - 1);
+            long tFim = System.nanoTime();
+            double tempoQuick = (tFim - tInicio) / 1e6;
+            System.out.printf("QuickSort : %.3f ms\n", tempoQuick);
+
+            // Avaliação do ShellSort
+            int[] dadosShell = dadosOriginais.clone();
+            tInicio = System.nanoTime();
+            SortAlgorithms.shellSort(dadosShell);
+            tFim = System.nanoTime();
+            double tempoShell = (tFim - tInicio) / 1e6;
+            System.out.printf("ShellSort : %.3f ms\n", tempoShell);
+
+            // Avaliação do BubbleSort
+            if (n <= 50000) {
+                int[] dadosBubble = dadosOriginais.clone();
+                tInicio = System.nanoTime();
+                SortAlgorithms.bubbleSort(dadosBubble);
+                tFim = System.nanoTime();
+                double tempoBubble = (tFim - tInicio) / 1e6;
+                System.out.printf("BubbleSort: %.3f ms\n", tempoBubble);
+            } else {
+                System.out.println("BubbleSort: Ignorado para N > 50.000 (complexidade O(n^2) impraticavel)");
+            }
+
+            // Grava o ficheiro final ordenado (QuickSort)
+            FileManager.guardarFicheiro(nomeFicheiro, dadosQuick);
+            System.out.println("\nFicheiro ordenado gravado com sucesso.");
 
         } catch (IOException e) {
             System.err.println("Erro ao processar ficheiros: " + e.getMessage());
-        } catch (NumberFormatException e) {
-            System.err.println("O argumento do tamanho deve ser um número inteiro válido.");
         }
     }
 }
