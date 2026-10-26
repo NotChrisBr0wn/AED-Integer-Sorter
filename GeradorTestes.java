@@ -8,6 +8,7 @@ public class GeradorTestes {
 
         for (int n : tamanhos) {
             String nomeBin = "teste_" + n + ".bin";
+            String nomeDat = "teste_" + n + ".dat";
             String nomeTxt = "teste_" + n + ".txt";
 
             // Gerar Ficheiro Binário (.bin)
@@ -20,6 +21,17 @@ public class GeradorTestes {
                 System.err.println("Erro ao gerar " + nomeBin);
             }
 
+
+            // Gerar Ficheiro Binário (.dat)
+            try (DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(nomeDat)))) {
+                for (int i = 0; i < n; i++) {
+                    dos.writeInt(rand.nextInt(1000000));
+                }
+                System.out.println("Gerado: " + nomeDat);
+            } catch (IOException e) {
+                System.err.println("Erro ao gerar " + nomeDat);
+            }
+            
             // Gerar Ficheiro de Texto (.txt)
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(nomeTxt))) {
                 for (int i = 0; i < n; i++) {
@@ -29,6 +41,7 @@ public class GeradorTestes {
             } catch (IOException e) {
                 System.err.println("Erro ao gerar " + nomeTxt);
             }
+            
         }
     }
 }
